@@ -11,7 +11,7 @@ func TestLoadConfig(t *testing.T) {
 		NumRuns:         1,
 		SelectionMethod: Roulette,
 		PopulationSize:  16,
-		MaxGenerations:  100,
+		MaxGenerations:  500,
 		NumQueens:       8,
 		MutationRate:    0.1,
 		CrossOverRate:   0.5,
