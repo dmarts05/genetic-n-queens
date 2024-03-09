@@ -42,5 +42,5 @@ build/prod:
 ## run: run the  application
 .PHONY: run
 run: build
-	/tmp/bin/${BINARY_NAME}
+	/tmp/bin/${BINARY_NAME} ${ARGS}
 
