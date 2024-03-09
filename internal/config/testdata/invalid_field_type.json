@@ -1,0 +1,10 @@
+{
+  "num_runs": "error",
+  "selection_method": "roulette",
+  "population_size": 50,
+  "max_generations": 300,
+  "num_queens": 22,
+  "mutation_rate": 0.01,
+  "crossover_rate": 0.1,
+  "elitism": true
+}
