@@ -1,14 +1,15 @@
 package individual
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/dmarts05/genetic-n-queens/internal/position"
 )
 
 func Test_areQueensAttacking(t *testing.T) {
 	type args struct {
-		pos1 Position
-		pos2 Position
+		pos1 position.Position
+		pos2 position.Position
 	}
 	tests := []struct {
 		name string
@@ -18,32 +19,32 @@ func Test_areQueensAttacking(t *testing.T) {
 		{
 			name: "Same row",
 			args: args{
-				pos1: Position{0, 0},
-				pos2: Position{0, 1},
+				pos1: position.Position{Row: 0, Column: 0},
+				pos2: position.Position{Row: 0, Column: 1},
 			},
 			want: true,
 		},
 		{
 			name: "Same column",
 			args: args{
-				pos1: Position{0, 0},
-				pos2: Position{1, 0},
+				pos1: position.Position{Row: 0, Column: 0},
+				pos2: position.Position{Row: 1, Column: 0},
 			},
 			want: true,
 		},
 		{
 			name: "Same diagonal",
 			args: args{
-				pos1: Position{0, 0},
-				pos2: Position{1, 1},
+				pos1: position.Position{Row: 0, Column: 0},
+				pos2: position.Position{Row: 1, Column: 1},
 			},
 			want: true,
 		},
 		{
 			name: "Non-attacking",
 			args: args{
-				pos1: Position{0, 0},
-				pos2: Position{1, 2},
+				pos1: position.Position{Row: 0, Column: 0},
+				pos2: position.Position{Row: 1, Column: 2},
 			},
 			want: false,
 		},
@@ -57,59 +58,38 @@ func Test_areQueensAttacking(t *testing.T) {
 	}
 }
 
-func TestIndividual_getQueenPositions(t *testing.T) {
-	ind := &Individual{
-		Board: [][]bool{
-			{true, false, false, false},
-			{false, true, false, false},
-			{false, false, true, false},
-			{false, false, false, true},
-		},
-	}
-	queenPositions := ind.getQueenPositions()
-	expected := []Position{
-		{0, 0},
-		{1, 1},
-		{2, 2},
-		{3, 3},
-	}
-	if !reflect.DeepEqual(queenPositions, expected) {
-		t.Errorf("Expected %v, got %v", expected, queenPositions)
-	}
-}
-
 func TestIndividual_Fitness(t *testing.T) {
-	attackingQueensBoard := [][]bool{
-		{true, false, false, false},
-		{false, true, false, false},
-		{false, false, true, false},
-		{false, false, false, true},
+	attackingQueenPositions := []position.Position{
+		{Row: 0, Column: 0},
+		{Row: 1, Column: 1},
+		{Row: 2, Column: 2},
+		{Row: 3, Column: 3},
 	}
 
-	twoClashBoard := [][]bool{
-		{true, false, false, false, false, false, false, false},
-		{true, false, false, false, false, false, false, false},
-		{false, false, false, false, true, false, false, false},
-		{false, false, false, false, false, false, false, true},
-		{false, true, false, false, false, false, false, false},
-		{false, false, false, true, false, false, false, false},
-		{false, false, false, false, false, true, false, false},
-		{false, false, true, false, false, false, false, false},
+	twoClashQueenPositions := []position.Position{
+		{Row: 0, Column: 0},
+		{Row: 1, Column: 0},
+		{Row: 2, Column: 4},
+		{Row: 3, Column: 7},
+		{Row: 4, Column: 1},
+		{Row: 5, Column: 3},
+		{Row: 6, Column: 5},
+		{Row: 7, Column: 2},
 	}
 
-	nonAttackingQueensBoard := [][]bool{
-		{true, false, false, false, false, false, false, false},
-		{false, false, false, false, false, false, true, false},
-		{false, false, false, false, true, false, false, false},
-		{false, false, false, false, false, false, false, true},
-		{false, true, false, false, false, false, false, false},
-		{false, false, false, true, false, false, false, false},
-		{false, false, false, false, false, true, false, false},
-		{false, false, true, false, false, false, false, false},
+	nonAttackingQueenPositions := []position.Position{
+		{Row: 0, Column: 0},
+		{Row: 1, Column: 6},
+		{Row: 2, Column: 4},
+		{Row: 3, Column: 7},
+		{Row: 4, Column: 1},
+		{Row: 5, Column: 3},
+		{Row: 6, Column: 5},
+		{Row: 7, Column: 2},
 	}
 
 	type fields struct {
-		Board [][]bool
+		QueenPositions []position.Position
 	}
 	tests := []struct {
 		name   string
@@ -119,30 +99,28 @@ func TestIndividual_Fitness(t *testing.T) {
 		{
 			name: "All Queens Attacking",
 			fields: fields{
-				Board: attackingQueensBoard,
+				QueenPositions: attackingQueenPositions,
 			},
 			want: 0,
 		},
 		{
 			name: "2 Clash Board",
 			fields: fields{
-				Board: twoClashBoard,
+				QueenPositions: twoClashQueenPositions,
 			},
 			want: 26,
 		},
 		{
 			name: "All Queens Non-Attacking",
 			fields: fields{
-				Board: nonAttackingQueensBoard,
+				QueenPositions: nonAttackingQueenPositions,
 			},
 			want: 28,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ind := &Individual{
-				Board: tt.fields.Board,
-			}
+			ind := New(tt.fields.QueenPositions)
 			if got := ind.Fitness(); got != tt.want {
 				t.Errorf("Individual.Fitness() = %v, want %v", got, tt.want)
 			}
