@@ -24,21 +24,21 @@ func areQueensAttacking(pos1, pos2 position.Position) bool {
 
 // Represents an individual in the population
 type Individual struct {
-	boardSize            int
 	numQueens            int
+	boardSize            int
 	maxNonAttackingPairs int
-	queenPositions       []position.Position
+	QueenPositions       []position.Position
 }
 
 func New(queenPositions []position.Position) *Individual {
-	boardSize := len(queenPositions)
 	numQueens := len(queenPositions)
-	maxNonAttackingPairs := (boardSize * (boardSize - 1)) / 2
+	boardSize := numQueens * numQueens
+	maxNonAttackingPairs := (numQueens * (numQueens - 1)) / 2
 	return &Individual{
-		boardSize:            boardSize,
 		numQueens:            numQueens,
+		boardSize:            boardSize,
 		maxNonAttackingPairs: maxNonAttackingPairs,
-		queenPositions:       queenPositions,
+		QueenPositions:       queenPositions,
 	}
 }
 
@@ -46,9 +46,9 @@ func New(queenPositions []position.Position) *Individual {
 func (ind *Individual) Fitness() int {
 	// Calculate the number of clashes between queens
 	clashes := 0
-	for i := 0; i < len(ind.queenPositions); i++ {
-		for j := i + 1; j < len(ind.queenPositions); j++ {
-			if areQueensAttacking(ind.queenPositions[i], ind.queenPositions[j]) {
+	for i := 0; i < len(ind.QueenPositions); i++ {
+		for j := i + 1; j < len(ind.QueenPositions); j++ {
+			if areQueensAttacking(ind.QueenPositions[i], ind.QueenPositions[j]) {
 				clashes++
 			}
 		}
@@ -66,11 +66,11 @@ func (ind *Individual) Crossover(other *Individual) (*Individual, *Individual, e
 	}
 
 	// Randomly select a crossover point
-	crossoverPoint := rand.IntN(len(ind.queenPositions))
+	crossoverPoint := rand.IntN(len(ind.QueenPositions))
 
 	// Create the children by slicing the queen positions of the parents
-	child1 := New(append(ind.queenPositions[:crossoverPoint], other.queenPositions[crossoverPoint:]...))
-	child2 := New(append(other.queenPositions[:crossoverPoint], ind.queenPositions[crossoverPoint:]...))
+	child1 := New(append(ind.QueenPositions[:crossoverPoint], other.QueenPositions[crossoverPoint:]...))
+	child2 := New(append(other.QueenPositions[:crossoverPoint], ind.QueenPositions[crossoverPoint:]...))
 
 	return child1, child2, nil
 }
@@ -83,10 +83,10 @@ func (ind *Individual) Mutate() {
 	// Randomly select a new position for the queen that is not the current position
 	// We also want to avoid positions that are already occupied by other queens
 	newQueenPosition := position.GenerateRandomPosition(ind.boardSize)
-	for slices.Contains(ind.queenPositions, newQueenPosition) {
+	for slices.Contains(ind.QueenPositions, newQueenPosition) {
 		newQueenPosition = position.GenerateRandomPosition(ind.boardSize)
 	}
 
 	// Move the queen by updating the queen to move with the new position
-	ind.queenPositions = slices.Replace(ind.queenPositions, queenToMoveIndex, queenToMoveIndex+1, newQueenPosition)
+	ind.QueenPositions = slices.Replace(ind.QueenPositions, queenToMoveIndex, queenToMoveIndex+1, newQueenPosition)
 }
