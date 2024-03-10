@@ -12,6 +12,12 @@ help:
 	@echo 'Usage:'
 	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' |  sed -e 's/^/ /'
 
+## clean: remove unnecessary files
+.PHONY: clean
+clean:
+	rm -rf ./bin
+	rm -f ./test_report.html
+
 # ==================================================================================== #
 # DEVELOPMENT
 # ==================================================================================== #
@@ -26,6 +32,11 @@ test:
 test/cover:
 	go test -v -race -buildvcs -coverprofile=/tmp/coverage.out ./...
 	go tool cover -html=/tmp/coverage.out
+
+## test/html: run all tests and generate html report
+.PHONY: test/html
+test/html:
+	go test -json ./... | go-test-report
 
 ## build: build the application
 .PHONY: build
