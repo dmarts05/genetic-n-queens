@@ -21,10 +21,25 @@ func Test_generateRandomIndividual(t *testing.T) {
 func TestGeneratePopulation(t *testing.T) {
 	numQueens := 8
 	populationSize := 100
-	population := GeneratePopulation(numQueens, populationSize)
+	population, _ := GeneratePopulation(numQueens, populationSize)
 
 	// Check if the population has the correct size
 	if len(population) != populationSize {
 		t.Errorf("GeneratePopulation() = %v, want %v", len(population), populationSize)
+	}
+
+	_, err := GeneratePopulation(3, populationSize)
+	if err == nil {
+		t.Errorf("GeneratePopulation() = %v, want error", err)
+	}
+
+	_, err = GeneratePopulation(numQueens, 1)
+	if err == nil {
+		t.Errorf("GeneratePopulation() = %v, want error", err)
+	}
+
+	_, err = GeneratePopulation(numQueens, 3)
+	if err == nil {
+		t.Errorf("GeneratePopulation() = %v, want error", err)
 	}
 }
