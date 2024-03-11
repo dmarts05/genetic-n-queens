@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"path/filepath"
 
 	"github.com/dmarts05/genetic-n-queens/internal/config"
@@ -23,7 +24,10 @@ func main() {
 	}
 
 	path := filepath.Join("configs", configName)
-	config := config.LoadConfig(filepath.Join(path))
+	config, err := config.LoadConfig(filepath.Join(path))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fmt.Println("************************************************************")
 	fmt.Println("Starting genetic algorithm with the following configuration:")

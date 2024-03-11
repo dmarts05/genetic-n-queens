@@ -33,21 +33,27 @@ func TestLoadConfig(t *testing.T) {
 		path string
 	}
 	tests := []struct {
-		name string
-		args args
-		want Config
+		name    string
+		args    args
+		want    Config
+		wantErr bool
 	}{
-		{"Empty path", args{path: ""}, defaultConfig},
-		{"Invalid path", args{path: "invalid"}, defaultConfig},
-		{"Valid config", args{path: "valid.json"}, validConfig},
-		{"Missing field", args{path: "invalid_missing_field.json"}, defaultConfig},
-		{"Invalid field type", args{path: "invalid_field_type.json"}, defaultConfig},
+		{"Empty path", args{path: ""}, defaultConfig, false},
+		{"Invalid path", args{path: "invalid"}, defaultConfig, false},
+		{"Valid config", args{path: "valid.json"}, validConfig, false},
+		{"Missing field", args{path: "invalid_missing_field.json"}, Config{}, true},
+		{"Invalid field type", args{path: "invalid_field_type.json"}, Config{}, true},
+		{"Invalid field value", args{path: "invalid_value.json"}, Config{}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.args.path = filepath.Join("testdata", tt.args.path)
-
-			if got := LoadConfig(tt.args.path); !reflect.DeepEqual(got, tt.want) {
+			got, err := LoadConfig(tt.args.path)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("LoadConfig() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("LoadConfig() = %v, want %v", got, tt.want)
 			}
 		})
