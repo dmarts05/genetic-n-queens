@@ -2,11 +2,13 @@ package selection
 
 import (
 	"math/rand/v2"
+	"sort"
 
 	"github.com/dmarts05/genetic-n-queens/internal/individual"
 	"github.com/dmarts05/genetic-n-queens/internal/util"
 )
 
+// Select individuals from the population using the tournament method
 func SelectByTournament(population []*individual.Individual) []*individual.Individual {
 	selected := []*individual.Individual{}
 	for len(selected) < len(population) {
@@ -25,6 +27,7 @@ func SelectByTournament(population []*individual.Individual) []*individual.Indiv
 	return selected
 }
 
+// Select individuals from the population using the roulette method
 func SelectByRoulette(population []*individual.Individual) []*individual.Individual {
 	selected := []*individual.Individual{}
 	totalFitness := 0
@@ -54,4 +57,12 @@ func SelectByRoulette(population []*individual.Individual) []*individual.Individ
 	}
 
 	return selected
+}
+
+// Select n best individuals from the population
+func SelectByElitism(population []*individual.Individual, n int) []*individual.Individual {
+	sort.Slice(population, func(i, j int) bool {
+		return population[i].Fitness() > population[j].Fitness()
+	})
+	return population[:n]
 }
