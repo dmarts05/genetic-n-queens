@@ -8,8 +8,9 @@ import (
 
 // Represents the result of a single generation of the genetic algorithm
 type GenerationResult struct {
+	Generation         int                 `json:"generation"`
 	BestQueenPositions []position.Position `json:"best_queen_positions"`
-	BestFitness        float64             `json:"best_fitness"`
+	BestFitness        int                 `json:"best_fitness"`
 	MeanFitness        float64             `json:"mean_fitness"`
 }
 

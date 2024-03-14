@@ -9,16 +9,18 @@ import (
 
 func TestGenerationResult_ToJSON(t *testing.T) {
 	result := GenerationResult{
+		Generation: 1,
 		BestQueenPositions: []position.Position{
 			{Row: 0, Column: 0},
 			{Row: 1, Column: 1},
 			{Row: 2, Column: 2},
 			{Row: 3, Column: 3},
 		},
-		BestFitness: 0.5,
+		BestFitness: 2,
 		MeanFitness: 0.25,
 	}
 	expected := `{
+  "generation": 1,
   "best_queen_positions": [
     {
       "row": 0,
@@ -37,7 +39,7 @@ func TestGenerationResult_ToJSON(t *testing.T) {
       "column": 3
     }
   ],
-  "best_fitness": 0.5,
+  "best_fitness": 2,
   "mean_fitness": 0.25
 }`
 
