@@ -4,18 +4,20 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"path/filepath"
+	"sync"
 
 	"github.com/dmarts05/genetic-n-queens/internal/config"
+	"github.com/dmarts05/genetic-n-queens/internal/population"
+	"github.com/dmarts05/genetic-n-queens/internal/result"
 )
 
 func main() {
 	// Load config
 	var help bool
-	var configName string
+	var configPath string
 
 	flag.BoolVar(&help, "h", false, "Show help")
-	flag.StringVar(&configName, "c", "", "Provide the name of the configuration file you want to use in configs folder.")
+	flag.StringVar(&configPath, "c", "", "Provide the name of the configuration file you want to use in configs folder.")
 	flag.Parse()
 
 	if help {
@@ -23,22 +25,46 @@ func main() {
 		return
 	}
 
-	path := filepath.Join("configs", configName)
-	config, err := config.LoadConfig(filepath.Join(path))
+	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("************************************************************")
 	fmt.Println("Starting genetic algorithm with the following configuration:")
+	fmt.Println("- Number of runs: ", cfg.NumRuns)
+	fmt.Println("- Selection method: ", cfg.SelectionMethod)
+	fmt.Println("- Population size: ", cfg.PopulationSize)
+	fmt.Println("- Maximum number of generations: ", cfg.MaxGenerations)
+	fmt.Println("- Number of queens: ", cfg.NumQueens)
+	fmt.Println("- Mutation rate: ", cfg.MutationRate)
+	fmt.Println("- Crossover rate: ", cfg.CrossOverRate)
+	fmt.Println("- Elitism: ", cfg.Elitism)
 	fmt.Println("************************************************************")
-	fmt.Println("- Number of runs: ", config.NumRuns)
-	fmt.Println("- Selection method: ", config.SelectionMethod)
-	fmt.Println("- Population size: ", config.PopulationSize)
-	fmt.Println("- Maximum number of generations: ", config.MaxGenerations)
-	fmt.Println("- Number of queens: ", config.NumQueens)
-	fmt.Println("- Mutation rate: ", config.MutationRate)
-	fmt.Println("- Crossover rate: ", config.CrossOverRate)
-	fmt.Println("- Elitism: ", config.Elitism)
-	fmt.Println("************************************************************")
+
+	// Run the genetic algorithm for the number of runs specified in the configuration with goroutines
+	bestPossibleFitness := cfg.NumQueens * (cfg.NumQueens - 1) / 2
+	var wg sync.WaitGroup
+	ch := make(chan result.GenerationResult, cfg.NumRuns)
+	for i := 0; i < cfg.NumRuns; i++ {
+		pop := population.Generate(cfg.NumQueens, cfg.PopulationSize)
+		wg.Add(1)
+		go population.EvolveConcurrentWrapper(i, ch, &wg, pop, cfg.SelectionMethod, cfg.MaxGenerations, cfg.MutationRate, cfg.CrossOverRate, cfg.Elitism, bestPossibleFitness)
+	}
+
+	// Wait for all goroutines to finish
+	wg.Wait()
+	close(ch)
+
+	// Load results from the channel
+	results := []result.GenerationResult{}
+	for r := range ch {
+		results = append(results, r)
+	}
+
+	// Save results to a file
+	err = result.SaveResultsToFile(results, "results.json")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
