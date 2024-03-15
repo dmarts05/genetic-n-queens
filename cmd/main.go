@@ -42,8 +42,12 @@ func main() {
 	fmt.Println("- Elitism: ", cfg.Elitism)
 	fmt.Println("************************************************************")
 
-	// Run the genetic algorithm for the number of runs specified in the configuration with goroutines
 	bestPossibleFitness := cfg.NumQueens * (cfg.NumQueens - 1) / 2
+	fmt.Println("************************************************************")
+	fmt.Println("Best possible fitness: ", bestPossibleFitness)
+	fmt.Println("************************************************************")
+
+	// Run the genetic algorithm for the number of runs specified in the configuration with goroutines
 	var wg sync.WaitGroup
 	ch := make(chan result.GenerationResult, cfg.NumRuns)
 	for i := 0; i < cfg.NumRuns; i++ {
