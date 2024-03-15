@@ -21,7 +21,7 @@ func Test_generateRandomIndividual(t *testing.T) {
 func TestGeneratePopulation(t *testing.T) {
 	numQueens := 8
 	populationSize := 100
-	population := GeneratePopulation(numQueens, populationSize)
+	population := Generate(numQueens, populationSize)
 
 	// Check if the population has the correct size
 	if len(population) != populationSize {

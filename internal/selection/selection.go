@@ -13,7 +13,7 @@ func SelectByTournament(population []*individual.Individual) []*individual.Indiv
 	selected := []*individual.Individual{}
 	for len(selected) < len(population) {
 		// Get 2 random individuals
-		samples := util.Sample(selected, 2)
+		samples := util.Sample(population, 2)
 		ind1, ind2 := samples[0], samples[1]
 
 		// Select the best one

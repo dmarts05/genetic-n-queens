@@ -9,9 +9,9 @@ type Position struct {
 }
 
 // Generate a random position on a board with the given size
-func GenerateRandomPosition(boardSize int) Position {
+func GenerateRandomPosition(nrows, ncols int) Position {
 	return Position{
-		Row:    rand.IntN(boardSize),
-		Column: rand.IntN(boardSize),
+		Row:    rand.IntN(nrows),
+		Column: rand.IntN(ncols),
 	}
 }

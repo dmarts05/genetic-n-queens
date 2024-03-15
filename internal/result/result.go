@@ -2,6 +2,8 @@ package result
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
 
 	"github.com/dmarts05/genetic-n-queens/internal/position"
 )
@@ -14,19 +16,17 @@ type GenerationResult struct {
 	MeanFitness        float64             `json:"mean_fitness"`
 }
 
-// Transforms a GenerationResult into a JSON string
-func (result GenerationResult) ToJSON() string {
-	j, _ := json.MarshalIndent(result, "", "  ")
-	return string(j)
-}
-
-// Get best generation result from a list of generation results
-func GetBestGenerationResult(results []GenerationResult) GenerationResult {
-	best := results[0]
-	for _, result := range results {
-		if result.BestFitness > best.BestFitness {
-			best = result
-		}
+// Save a slice of generation results to a file in JSON format
+func SaveResultsToFile(results []GenerationResult, path string) error {
+	file, err := json.MarshalIndent(results, "", " ")
+	if err != nil {
+		return fmt.Errorf("error marshalling results to JSON: %v", err)
 	}
-	return best
+
+	err = os.WriteFile(path, file, 0644)
+	if err != nil {
+		return fmt.Errorf("error writing results to file: %v", err)
+	}
+
+	return nil
 }

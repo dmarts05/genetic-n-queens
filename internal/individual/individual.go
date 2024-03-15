@@ -82,9 +82,9 @@ func (ind *Individual) Mutate() {
 
 	// Randomly select a new position for the queen that is not the current position
 	// We also want to avoid positions that are already occupied by other queens
-	newQueenPosition := position.GenerateRandomPosition(ind.boardSize)
+	newQueenPosition := position.GenerateRandomPosition(ind.numQueens, ind.numQueens)
 	for slices.Contains(ind.QueenPositions, newQueenPosition) {
-		newQueenPosition = position.GenerateRandomPosition(ind.boardSize)
+		newQueenPosition = position.GenerateRandomPosition(ind.numQueens, ind.numQueens)
 	}
 
 	// Move the queen by updating the queen to move with the new position
