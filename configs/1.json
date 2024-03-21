@@ -1,9 +1,9 @@
 {
   "num_runs": 10,
   "selection_method": "tournament",
-  "population_size": 32,
+  "population_size": 50,
   "max_generations": 5000,
-  "num_queens": 16,
+  "num_queens": 29,
   "mutation_rate": 0.8,
   "crossover_rate": 0.1,
   "elitism": true
