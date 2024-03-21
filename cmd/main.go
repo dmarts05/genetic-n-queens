@@ -17,7 +17,7 @@ func main() {
 	var configPath string
 
 	flag.BoolVar(&help, "h", false, "Show help")
-	flag.StringVar(&configPath, "c", "", "Provide the name of the configuration file you want to use in configs folder.")
+	flag.StringVar(&configPath, "c", "", "Provide the path to a JSON configuration file for the genetic algorithm.")
 	flag.Parse()
 
 	if help {
@@ -30,22 +30,22 @@ func main() {
 		log.Fatal(err)
 	}
 
+	bestPossibleFitness := cfg.NumQueens * (cfg.NumQueens - 1) / 2
+
 	fmt.Println("************************************************************")
 	fmt.Println("Starting genetic algorithm with the following configuration:")
-	fmt.Println("- Number of runs: ", cfg.NumRuns)
-	fmt.Println("- Selection method: ", cfg.SelectionMethod)
-	fmt.Println("- Population size: ", cfg.PopulationSize)
-	fmt.Println("- Maximum number of generations: ", cfg.MaxGenerations)
-	fmt.Println("- Number of queens: ", cfg.NumQueens)
-	fmt.Println("- Mutation rate: ", cfg.MutationRate)
-	fmt.Println("- Crossover rate: ", cfg.CrossOverRate)
-	fmt.Println("- Elitism: ", cfg.Elitism)
+	fmt.Println("- Number of runs:", cfg.NumRuns)
+	fmt.Println("- Selection method:", cfg.SelectionMethod)
+	fmt.Println("- Population size:", cfg.PopulationSize)
+	fmt.Println("- Maximum number of generations:", cfg.MaxGenerations)
+	fmt.Println("- Number of queens:", cfg.NumQueens)
+	fmt.Println("- Mutation rate:", cfg.MutationRate)
+	fmt.Println("- Crossover rate:", cfg.CrossOverRate)
+	fmt.Println("- Elitism:", cfg.Elitism)
+	fmt.Println("- Best possible fitness:", bestPossibleFitness)
 	fmt.Println("************************************************************")
 
-	bestPossibleFitness := cfg.NumQueens * (cfg.NumQueens - 1) / 2
-	fmt.Println("************************************************************")
-	fmt.Println("Best possible fitness: ", bestPossibleFitness)
-	fmt.Println("************************************************************")
+	fmt.Println()
 
 	// Run the genetic algorithm for the number of runs specified in the configuration with goroutines
 	var wg sync.WaitGroup
@@ -53,7 +53,7 @@ func main() {
 	for i := 0; i < cfg.NumRuns; i++ {
 		pop := population.Generate(cfg.NumQueens, cfg.PopulationSize)
 		wg.Add(1)
-		go population.EvolveConcurrentWrapper(i, ch, &wg, pop, cfg.SelectionMethod, cfg.MaxGenerations, cfg.MutationRate, cfg.CrossOverRate, cfg.Elitism, bestPossibleFitness)
+		go population.EvolveConcurrentWrapper(i+1, ch, &wg, pop, cfg.SelectionMethod, cfg.MaxGenerations, cfg.MutationRate, cfg.CrossOverRate, cfg.Elitism, bestPossibleFitness)
 	}
 
 	// Wait for all goroutines to finish
@@ -66,9 +66,13 @@ func main() {
 		results = append(results, r)
 	}
 
+	fmt.Println()
+
 	// Save results to a file
-	err = result.SaveResultsToFile(results, "results.json")
+	fileName := "results.json"
+	err = result.SaveResultsToFile(results, fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("Results saved to:", fileName)
 }

@@ -8,10 +8,10 @@ func Test_generateRandomIndividual(t *testing.T) {
 	numQueens := 8
 	ind := generateRandomIndividual(numQueens)
 
-	// Check if the individual has no queens with the same row
+	// Check if the individual has no queens in the same row
 	for i := 0; i < numQueens; i++ {
 		for j := i + 1; j < numQueens; j++ {
-			if ind.QueenPositions[i].Row == ind.QueenPositions[j].Row {
+			if ind.QueenPositions[i] == ind.QueenPositions[j] {
 				t.Errorf("generateRandomIndividual() = %v, want no queens with the same row", ind)
 			}
 		}

@@ -2,91 +2,111 @@ package individual
 
 import (
 	"errors"
-	"math"
 	"math/rand/v2"
 	"slices"
-
-	"github.com/dmarts05/genetic-n-queens/internal/position"
 )
 
-// Check if 2 queens are attacking each other
-func areQueensAttacking(pos1, pos2 position.Position) bool {
-	// Row and column check
-	if pos1.Row == pos2.Row || pos1.Column == pos2.Column {
-		return true
-	}
-
-	// Diagonal check
-	rowDiff := int(math.Abs(float64(pos1.Row - pos2.Row)))
-	colDiff := int(math.Abs(float64(pos1.Column - pos2.Column)))
-	return rowDiff == colDiff || rowDiff == 0 || colDiff == 0
-}
-
 // Represents an individual in the population
+// QueenPositions: The positions of the queens on the board. Each index in the array represents the column of the queen and the value at that index represents the row of the queen
 type Individual struct {
-	numQueens            int
-	boardSize            int
-	maxNonAttackingPairs int
-	QueenPositions       []position.Position
+	QueenPositions []int
 }
 
-func New(queenPositions []position.Position) *Individual {
-	numQueens := len(queenPositions)
-	boardSize := numQueens * numQueens
-	maxNonAttackingPairs := (numQueens * (numQueens - 1)) / 2
-	return &Individual{
-		numQueens:            numQueens,
-		boardSize:            boardSize,
-		maxNonAttackingPairs: maxNonAttackingPairs,
-		QueenPositions:       queenPositions,
-	}
-}
-
-// Calculate the fitness of the individual
-func (ind *Individual) Fitness() int {
-	// Calculate the number of clashes between queens
+// Calculate the number of clashes between the queens for the individual
+func (ind *Individual) getNumClashes() int {
+	numQueens := len(ind.QueenPositions)
 	clashes := 0
-	for i := 0; i < len(ind.QueenPositions); i++ {
-		for j := i + 1; j < len(ind.QueenPositions); j++ {
-			if areQueensAttacking(ind.QueenPositions[i], ind.QueenPositions[j]) {
+
+	// Since every queen is in a different column and row, we only need to check for diagonal attacks
+	// If the difference between the rows and columns of the 2 queens are equal, they are attacking each other
+	for col1 := 0; col1 < numQueens; col1++ {
+		for col2 := col1 + 1; col2 < numQueens; col2++ {
+			row1 := ind.QueenPositions[col1]
+			row2 := ind.QueenPositions[col2]
+
+			if row1-col1 == row2-col2 || row1+col1 == row2+col2 {
 				clashes++
 			}
 		}
 	}
 
-	fitness := ind.maxNonAttackingPairs - clashes
+	return clashes
+}
+
+// Calculate the fitness of the individual
+func (ind *Individual) Fitness() int {
+	numQueens := len(ind.QueenPositions)
+	maxNonAttackingPairs := numQueens * (numQueens - 1) / 2
+	clashes := ind.getNumClashes()
+	fitness := maxNonAttackingPairs - clashes
 	return fitness
 }
 
 // Perform crossover between two individuals to create two new individuals
+// Here we are using OX because it let us avoid creating invalid individuals (i.e. individuals with duplicate queen positions or in the same row or column
 func (ind *Individual) Crossover(other *Individual) (*Individual, *Individual, error) {
-	// Check if the two individuals have the same board size
-	if ind.boardSize != other.boardSize {
-		return nil, nil, errors.New("individuals have different board sizes")
+	// Check if the two individuals have the same amount of queens
+	if len(ind.QueenPositions) != len(other.QueenPositions) {
+		return nil, nil, errors.New("individuals have different number of queens")
 	}
 
-	// Randomly select a crossover point
-	crossoverPoint := rand.IntN(len(ind.QueenPositions))
+	// Create two new individuals to store the children
+	numQueens := len(ind.QueenPositions)
+	child1 := &Individual{QueenPositions: make([]int, numQueens)}
+	child2 := &Individual{QueenPositions: make([]int, numQueens)}
+	// Set the queen positions of the children to -1 to indicate that they are empty
+	for i := 0; i < numQueens; i++ {
+		child1.QueenPositions[i] = -1
+		child2.QueenPositions[i] = -1
+	}
 
-	// Create the children by slicing the queen positions of the parents
-	child1 := New(append(ind.QueenPositions[:crossoverPoint], other.QueenPositions[crossoverPoint:]...))
-	child2 := New(append(other.QueenPositions[:crossoverPoint], ind.QueenPositions[crossoverPoint:]...))
+	// Select two random points to perform the crossover
+	point1 := rand.IntN(numQueens)
+	point2 := rand.IntN(numQueens - 1)
+	if point2 >= point1 {
+		point2++
+	} else {
+		point1, point2 = point2, point1
+	}
+
+	// Copy the selected part of the parents to the children
+	for i := point1; i < point2; i++ {
+		child1.QueenPositions[i] = other.QueenPositions[i]
+		child2.QueenPositions[i] = ind.QueenPositions[i]
+	}
+
+	// Repair the children by adding the missing queens
+
+	// Child 1
+	for i := 0; i < len(child1.QueenPositions); i++ {
+		if i < point1 || i >= point2 && child1.QueenPositions[i] == -1 {
+			for j := 0; j < len(ind.QueenPositions); j++ {
+				if !slices.Contains(child1.QueenPositions, ind.QueenPositions[j]) {
+					child1.QueenPositions[i] = ind.QueenPositions[j]
+					break
+				}
+			}
+		}
+	}
+
+	// Child 2
+	for i := 0; i < len(child2.QueenPositions); i++ {
+		if i < point1 || i >= point2 && child2.QueenPositions[i] == -1 {
+			for j := 0; j < len(other.QueenPositions); j++ {
+				if !slices.Contains(child2.QueenPositions, other.QueenPositions[j]) {
+					child2.QueenPositions[i] = other.QueenPositions[j]
+					break
+				}
+			}
+		}
+	}
 
 	return child1, child2, nil
 }
 
-// Mutate the individual
+// Mutate the individual by shuffling the queen positions
 func (ind *Individual) Mutate() {
-	// Randomly select a queen to move
-	queenToMoveIndex := rand.IntN(ind.numQueens)
-
-	// Randomly select a new position for the queen that is not the current position
-	// We also want to avoid positions that are already occupied by other queens
-	newQueenPosition := position.GenerateRandomPosition(ind.numQueens, ind.numQueens)
-	for slices.Contains(ind.QueenPositions, newQueenPosition) {
-		newQueenPosition = position.GenerateRandomPosition(ind.numQueens, ind.numQueens)
-	}
-
-	// Move the queen by updating the queen to move with the new position
-	ind.QueenPositions = slices.Replace(ind.QueenPositions, queenToMoveIndex, queenToMoveIndex+1, newQueenPosition)
+	rand.Shuffle(len(ind.QueenPositions), func(i, j int) {
+		ind.QueenPositions[i], ind.QueenPositions[j] = ind.QueenPositions[j], ind.QueenPositions[i]
+	})
 }

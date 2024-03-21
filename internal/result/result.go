@@ -4,16 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-
-	"github.com/dmarts05/genetic-n-queens/internal/position"
 )
 
 // Represents the result of a single generation of the genetic algorithm
 type GenerationResult struct {
-	Generation         int                 `json:"generation"`
-	BestQueenPositions []position.Position `json:"best_queen_positions"`
-	BestFitness        int                 `json:"best_fitness"`
-	MeanFitness        float64             `json:"mean_fitness"`
+	BestQueenPositions []int   `json:"best_queen_positions"`
+	Generation         int     `json:"generation"`
+	BestFitness        int     `json:"best_fitness"`
+	MeanFitness        float64 `json:"mean_fitness"`
 }
 
 // Save a slice of generation results to a file in JSON format

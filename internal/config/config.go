@@ -18,8 +18,8 @@ const (
 
 // Represents the configuration for the genetic algorithm
 type Config struct {
-	NumRuns         int                 `json:"num_runs"`
 	SelectionMethod SelectionMethodType `json:"selection_method"`
+	NumRuns         int                 `json:"num_runs"`
 	PopulationSize  int                 `json:"population_size"`
 	MaxGenerations  int                 `json:"max_generations"`
 	NumQueens       int                 `json:"num_queens"`
@@ -31,14 +31,14 @@ type Config struct {
 // Load configuration from specified path or use default configuration if not found
 func LoadConfig(path string) (Config, error) {
 	defaultConfig := Config{
-		NumRuns:         1,
-		SelectionMethod: Roulette,
+		NumRuns:         5,
+		SelectionMethod: Tournament,
 		PopulationSize:  16,
 		MaxGenerations:  500,
 		NumQueens:       8,
-		MutationRate:    0.1,
+		MutationRate:    0.2,
 		CrossOverRate:   0.5,
-		Elitism:         true,
+		Elitism:         false,
 	}
 
 	// Load config from specified path
