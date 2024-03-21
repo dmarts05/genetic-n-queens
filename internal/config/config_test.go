@@ -8,14 +8,14 @@ import (
 
 func TestLoadConfig(t *testing.T) {
 	defaultConfig := Config{
-		NumRuns:         1,
-		SelectionMethod: Roulette,
+		NumRuns:         5,
+		SelectionMethod: Tournament,
 		PopulationSize:  16,
 		MaxGenerations:  500,
 		NumQueens:       8,
-		MutationRate:    0.1,
+		MutationRate:    0.2,
 		CrossOverRate:   0.5,
-		Elitism:         true,
+		Elitism:         false,
 	}
 
 	validConfig := Config{
