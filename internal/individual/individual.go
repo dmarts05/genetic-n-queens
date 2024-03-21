@@ -13,7 +13,7 @@ type Individual struct {
 }
 
 // Calculate the number of clashes between the queens for the individual
-func (ind Individual) getNumClashes() int {
+func (ind *Individual) getNumClashes() int {
 	numQueens := len(ind.QueenPositions)
 	clashes := 0
 
@@ -34,7 +34,7 @@ func (ind Individual) getNumClashes() int {
 }
 
 // Calculate the fitness of the individual
-func (ind Individual) Fitness() int {
+func (ind *Individual) Fitness() int {
 	numQueens := len(ind.QueenPositions)
 	maxNonAttackingPairs := numQueens * (numQueens - 1) / 2
 	clashes := ind.getNumClashes()
@@ -44,16 +44,16 @@ func (ind Individual) Fitness() int {
 
 // Perform crossover between two individuals to create two new individuals
 // Here we are using OX because it let us avoid creating invalid individuals (i.e. individuals with duplicate queen positions or in the same row or column
-func (ind Individual) Crossover(other Individual) (Individual, Individual, error) {
+func (ind *Individual) Crossover(other *Individual) (*Individual, *Individual, error) {
 	// Check if the two individuals have the same amount of queens
 	if len(ind.QueenPositions) != len(other.QueenPositions) {
-		return Individual{}, Individual{}, errors.New("individuals have different number of queens")
+		return nil, nil, errors.New("individuals have different number of queens")
 	}
 
 	// Create two new individuals to store the children
 	numQueens := len(ind.QueenPositions)
-	child1 := Individual{QueenPositions: make([]int, numQueens)}
-	child2 := Individual{QueenPositions: make([]int, numQueens)}
+	child1 := &Individual{QueenPositions: make([]int, numQueens)}
+	child2 := &Individual{QueenPositions: make([]int, numQueens)}
 	// Set the queen positions of the children to -1 to indicate that they are empty
 	for i := 0; i < numQueens; i++ {
 		child1.QueenPositions[i] = -1

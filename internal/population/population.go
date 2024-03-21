@@ -8,22 +8,13 @@ import (
 
 	"github.com/dmarts05/genetic-n-queens/internal/config"
 	"github.com/dmarts05/genetic-n-queens/internal/individual"
-	"github.com/dmarts05/genetic-n-queens/internal/position"
 	"github.com/dmarts05/genetic-n-queens/internal/result"
 	"github.com/dmarts05/genetic-n-queens/internal/selection"
 )
 
 // Generate a random individual
 func generateRandomIndividual(numQueens int) *individual.Individual {
-	queenPositions := make([]position.Position, numQueens)
-	for i := 0; i < numQueens; i++ {
-		// We only make the column random in order to avoid having queens in the same row, reducing the number of clashes by default
-		queenPositions[i] = position.Position{
-			Row:    i,
-			Column: rand.IntN(numQueens),
-		}
-	}
-	return individual.New(queenPositions)
+	return &individual.Individual{QueenPositions: rand.Perm(numQueens)}
 }
 
 // Generate a population of random individuals with the given number of queens and population size
@@ -43,7 +34,7 @@ func EvolveConcurrentWrapper(workerID int, ch chan<- result.GenerationResult, wg
 
 	defer func() {
 		fmt.Println("------------------------------------------------------------")
-		fmt.Println("Worker", workerID, "finished with best fitness: ", r.BestFitness)
+		fmt.Println("Worker", workerID, "finished with best fitness:", r.BestFitness)
 		fmt.Println("------------------------------------------------------------")
 		wg.Done()
 	}()
@@ -72,7 +63,7 @@ func Evolve(pop []*individual.Individual, selectionMethod config.SelectionMethod
 		}
 		meanFitness = meanFitness / float64(len(pop))
 
-		bestQueenPositions := make([]position.Position, len(bestIndividual.QueenPositions))
+		bestQueenPositions := make([]int, len(bestIndividual.QueenPositions))
 		copy(bestQueenPositions, bestIndividual.QueenPositions)
 		results = append(results, result.GenerationResult{
 			Generation:         generation,
