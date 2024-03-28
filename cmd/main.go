@@ -68,6 +68,16 @@ func main() {
 
 	fmt.Println()
 
+	// Show final results
+	fmt.Println("************************************************************")
+	fmt.Println("Final results:")
+	fmt.Println("- Mean number of generations:", result.GetMeanGenerations(results))
+	fmt.Println("- Best fitness:", result.GetBestFitness(results))
+	fmt.Println("- Worst fitness:", result.GetWorstFitness(results))
+	fmt.Println("- Mean of the best fitness:", result.GetMeanBestFitness(results))
+	fmt.Println("- Mean of the mean fitness:", result.GetMeanMeanFitness(results))
+	fmt.Println("************************************************************")
+
 	// Save results to a file
 	fileName := "results.json"
 	err = result.SaveResultsToFile(results, fileName)

@@ -28,3 +28,52 @@ func SaveResultsToFile(results []GenerationResult, path string) error {
 
 	return nil
 }
+
+// Get the best fitness of a slice of generation results
+func GetBestFitness(results []GenerationResult) int {
+	bestFitness := results[0].BestFitness
+	for _, result := range results {
+		if result.BestFitness > bestFitness {
+			bestFitness = result.BestFitness
+		}
+	}
+	return bestFitness
+}
+
+// Get the worst fitness of a slice of generation results
+func GetWorstFitness(results []GenerationResult) int {
+	worstFitness := results[0].BestFitness
+	for _, result := range results {
+		if result.BestFitness < worstFitness {
+			worstFitness = result.BestFitness
+		}
+	}
+	return worstFitness
+}
+
+// Get the mean of the mean fitness of a slice of generation results
+func GetMeanMeanFitness(results []GenerationResult) float64 {
+	totalFitness := 0.0
+	for _, result := range results {
+		totalFitness += result.MeanFitness
+	}
+	return totalFitness / float64(len(results))
+}
+
+// Get the mean best fitness of a slice of generation results
+func GetMeanBestFitness(results []GenerationResult) float64 {
+	totalFitness := 0.0
+	for _, result := range results {
+		totalFitness += float64(result.BestFitness)
+	}
+	return totalFitness / float64(len(results))
+}
+
+// Get the mean generations required to find the solution of a slice of generation results
+func GetMeanGenerations(results []GenerationResult) float64 {
+	totalGenerations := 0.0
+	for _, result := range results {
+		totalGenerations += float64(result.Generation)
+	}
+	return totalGenerations / float64(len(results))
+}
