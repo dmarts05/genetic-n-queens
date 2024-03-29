@@ -8,6 +8,17 @@ import (
 	"reflect"
 )
 
+var DefaultConfig = Config{
+	NumRuns:         5,
+	SelectionMethod: Tournament,
+	PopulationSize:  16,
+	MaxGenerations:  500,
+	NumQueens:       8,
+	MutationRate:    0.2,
+	CrossOverRate:   0.5,
+	Elitism:         false,
+}
+
 // Represents the available selection methods for the genetic algorithm
 type SelectionMethodType string
 
@@ -28,24 +39,52 @@ type Config struct {
 	Elitism         bool                `json:"elitism"`
 }
 
-// Load configuration from specified path or use default configuration if not found
-func LoadConfig(path string) (Config, error) {
-	defaultConfig := Config{
-		NumRuns:         5,
-		SelectionMethod: Tournament,
-		PopulationSize:  16,
-		MaxGenerations:  500,
-		NumQueens:       8,
-		MutationRate:    0.2,
-		CrossOverRate:   0.5,
-		Elitism:         false,
+func New(selectionMethod SelectionMethodType, numRuns, populationSize, maxGenerations, numQueens int, mutationRate, crossOverRate float64, elitism bool) (Config, error) {
+	cfg := Config{
+		SelectionMethod: selectionMethod,
+		NumRuns:         numRuns,
+		PopulationSize:  populationSize,
+		MaxGenerations:  maxGenerations,
+		NumQueens:       numQueens,
+		MutationRate:    mutationRate,
+		CrossOverRate:   crossOverRate,
+		Elitism:         elitism,
+	}
+	err := cfg.validate()
+	if err != nil {
+		return Config{}, err
 	}
 
+	return cfg, nil
+}
+
+// Validate configuration values
+func (c Config) validate() error {
+	switch {
+	case c.NumRuns < 1:
+		return errors.New("number of runs must be at least 1")
+	case c.PopulationSize < 1 || c.PopulationSize%2 != 0:
+		return errors.New("population size must be at least 2 and even")
+	case c.MaxGenerations < 1:
+		return errors.New("maximum number of generations must be at least 1")
+	case c.NumQueens < 4:
+		return errors.New("number of queens must be at least 4, otherwise the problem is trivial")
+	case c.MutationRate < 0 || c.MutationRate > 1:
+		return errors.New("mutation rate must be between 0 and 1")
+	case c.CrossOverRate < 0 || c.CrossOverRate > 1:
+		return errors.New("crossover rate must be between 0 and 1")
+	default:
+		return nil
+	}
+}
+
+// Load configuration from specified path or use default configuration if not found
+func LoadConfigFromJSON(path string) (Config, error) {
 	// Load config from specified path
 	data, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Println("load config: specified configuration file not found, falling back to default configuration")
-		return defaultConfig, nil
+		return DefaultConfig, nil
 	}
 
 	uncheckedConfig := struct {
@@ -73,32 +112,12 @@ func LoadConfig(path string) (Config, error) {
 		}
 	}
 
-	// Check config values are valid
-	switch {
-	case *uncheckedConfig.NumRuns < 1:
-		return Config{}, errors.New("load config: number of runs must be at least 1")
-	case *uncheckedConfig.PopulationSize < 1 || *uncheckedConfig.PopulationSize%2 != 0:
-		return Config{}, errors.New("load config: population size must be at least 2 and even")
-	case *uncheckedConfig.MaxGenerations < 1:
-		return Config{}, errors.New("load config: maximum number of generations must be at least 1")
-	case *uncheckedConfig.NumQueens < 4:
-		return Config{}, errors.New("load config: number of queens must be at least 4, otherwise the problem is trivial")
-	case *uncheckedConfig.MutationRate < 0 || *uncheckedConfig.MutationRate > 1:
-		return Config{}, errors.New("load config: mutation rate must be between 0 and 1")
-	case *uncheckedConfig.CrossOverRate < 0 || *uncheckedConfig.CrossOverRate > 1:
-		return Config{}, errors.New("load config: crossover rate must be between 0 and 1")
+	// Since there are no nil fields, we can safely load the values into the config struct
+	var cfg Config
+	_ = json.Unmarshal(data, &cfg)
+	err = cfg.validate()
+	if err != nil {
+		return Config{}, err
 	}
-
-	config := Config{
-		NumRuns:         *uncheckedConfig.NumRuns,
-		SelectionMethod: *uncheckedConfig.SelectionMethod,
-		PopulationSize:  *uncheckedConfig.PopulationSize,
-		MaxGenerations:  *uncheckedConfig.MaxGenerations,
-		NumQueens:       *uncheckedConfig.NumQueens,
-		MutationRate:    *uncheckedConfig.MutationRate,
-		CrossOverRate:   *uncheckedConfig.CrossOverRate,
-		Elitism:         *uncheckedConfig.Elitism,
-	}
-
-	return config, nil
+	return cfg, nil
 }

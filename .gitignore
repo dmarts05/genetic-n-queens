@@ -2,4 +2,4 @@ bin
 .env
 test_report.html
 results.json
-configs
+__pycache__

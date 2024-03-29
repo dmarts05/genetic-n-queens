@@ -2,11 +2,6 @@ import argparse
 import json
 import tkinter as tk
 
-CANVAS_WIDTH = 400
-CANVAS_HEIGHT = 400
-CELL_SIZE = 50
-QUEEN_SIZE = 20
-
 
 class Solution:
     def __init__(
@@ -27,8 +22,6 @@ class SolutionCarousel(tk.Tk):
         self,
         width: int,
         height: int,
-        cell_size: int,
-        queen_size: int,
         results: list[Solution],
     ) -> None:
         if not results:
@@ -38,14 +31,19 @@ class SolutionCarousel(tk.Tk):
 
         self.width = width
         self.height = height
-        self.cell_size = cell_size
-        self.queen_size = queen_size
+        self.results = results
         self.num_queens = len(results[0].best_queen_positions)
 
-        self.title("N-Queens Solution Carousel")
+        self.title("N-Queens Genetic Algorithm Results")
 
         # Add padding
         self.padding = 10
+
+        # Calculate cell size and queen size dynamically
+        self.cell_size = min(
+            self.width // self.num_queens, self.height // self.num_queens
+        )
+        self.queen_size = self.cell_size // 2
 
         # Create frames for better organization
         self.canvas_frame = tk.Frame(self)
@@ -67,7 +65,6 @@ class SolutionCarousel(tk.Tk):
         self.solution_label = tk.Label(self.solution_frame, font=("Arial", 12))
         self.solution_label.pack(fill=tk.X)
 
-        self.results = results
         self.current_index = 0
 
         # Create buttons
@@ -187,7 +184,7 @@ def load_results_from_json(json_path: str) -> list[Solution]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Showcase N-Queens results.")
+    parser = argparse.ArgumentParser(description="N-Queens Genetic Algorithm Results.")
     parser.add_argument(
         "json_path",
         type=str,
@@ -196,10 +193,16 @@ def main() -> None:
     args = parser.parse_args()
 
     results = load_results_from_json(args.json_path)
-    app = SolutionCarousel(CANVAS_WIDTH, CANVAS_HEIGHT, CELL_SIZE, QUEEN_SIZE, results)
+
+    # Set canvas width and height based on number of queens
+    num_queens = len(results[0].best_queen_positions)
+    canvas_width = min(400, num_queens * 50)
+    canvas_height = min(400, num_queens * 50)
+
+    app = SolutionCarousel(canvas_width, canvas_height, results)
     # Set fixed window size
     app.resizable(False, False)
-    app.geometry(f"{CANVAS_WIDTH + 2 * app.padding}x{CANVAS_HEIGHT + 22 * app.padding}")
+    app.geometry(f"{canvas_width + 2 * app.padding}x{canvas_height + 22 * app.padding}")
 
     app.mainloop()
 
