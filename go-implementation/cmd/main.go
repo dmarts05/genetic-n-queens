@@ -15,9 +15,25 @@ func main() {
 	// Load config
 	var help bool
 	var configPath string
+	var numRuns int
+	var populationSize int
+	var maxGenerations int
+	var numQueens int
+	var mutationRate float64
+	var crossOverRate float64
+	var elitism bool
+	var selectionMethodStr string
 
-	flag.BoolVar(&help, "h", false, "Show help")
-	flag.StringVar(&configPath, "c", "", "Provide the path to a JSON configuration file for the genetic algorithm.")
+	flag.BoolVar(&help, "help", false, "Show help")
+	flag.StringVar(&configPath, "config", "", "Provide the path to a JSON configuration file for the genetic algorithm.")
+	flag.IntVar(&numRuns, "numRuns", config.DefaultConfig.NumRuns, "Number of runs for the genetic algorithm.")
+	flag.IntVar(&populationSize, "populationSize", config.DefaultConfig.PopulationSize, "Population size for the genetic algorithm.")
+	flag.IntVar(&maxGenerations, "maxGenerations", config.DefaultConfig.MaxGenerations, "Maximum number of generations for the genetic algorithm.")
+	flag.IntVar(&numQueens, "numQueens", config.DefaultConfig.NumQueens, "Number of queens for the genetic algorithm.")
+	flag.Float64Var(&mutationRate, "mutationRate", config.DefaultConfig.MutationRate, "Mutation rate for the genetic algorithm.")
+	flag.Float64Var(&crossOverRate, "crossOverRate", config.DefaultConfig.CrossOverRate, "Crossover rate for the genetic algorithm.")
+	flag.BoolVar(&elitism, "elitism", config.DefaultConfig.Elitism, "Elitism for the genetic algorithm.")
+	flag.StringVar(&selectionMethodStr, "selectionMethod", string(config.DefaultConfig.SelectionMethod), "Selection method for the genetic algorithm.")
 	flag.Parse()
 
 	if help {
@@ -25,9 +41,18 @@ func main() {
 		return
 	}
 
-	cfg, err := config.LoadConfig(configPath)
-	if err != nil {
-		log.Fatal(err)
+	var cfg config.Config
+	var err error
+	if configPath == "" {
+		cfg, err = config.New(config.SelectionMethodType(selectionMethodStr), numRuns, populationSize, maxGenerations, numQueens, mutationRate, crossOverRate, elitism)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		cfg, err = config.LoadConfigFromJSON(configPath)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	bestPossibleFitness := cfg.NumQueens * (cfg.NumQueens - 1) / 2

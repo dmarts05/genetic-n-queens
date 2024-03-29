@@ -5,25 +5,24 @@ name: Go
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.22.1'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.22.1"
 
-    - name: Checkout repository
-      uses: actions/checkout@main
+      - name: Checkout repository
+        uses: actions/checkout@main
 
-    - name: Build
-      run: make build
+      - name: Build
+        run: cd go-implementation && make build
 
-    - name: Test
-      run: make test
+      - name: Test
+        run: cd go-implementation && make test
