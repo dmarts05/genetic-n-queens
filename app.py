@@ -133,8 +133,10 @@ class GeneticNQueensApp(tk.Tk):
     def start_deap_implementation(self, args: Tuple[str, ...]) -> bool:
         try:
             subprocess.run(["python", "deap-implementation.py", *args], check=True)
+            return True
         except subprocess.CalledProcessError:
-            messagebox.showerror("Error", "Failed to start the DEAP app.")
+            messagebox.showerror("Error", "Failed to start the DEAP app.")  # type: ignore
+            return False
 
     def start_golang_implementation(self, args: Tuple[str, ...]) -> bool:
         def get_executable_path() -> str:
@@ -221,7 +223,7 @@ class GeneticNQueensApp(tk.Tk):
         )
 
         threading.Thread(
-            target=self.process_submission, implementation=implementation, args=(args,)
+            target=self.process_submission, args=(args, implementation)
         ).start()
 
     def process_submission(
