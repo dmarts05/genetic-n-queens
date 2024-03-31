@@ -1,3 +1,4 @@
+from enum import Enum
 import os
 import platform
 import subprocess
@@ -5,6 +6,16 @@ import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
 from typing import Tuple
+
+
+class Implementation(Enum):
+    GO = "go"
+    DEAP = "deap"
+
+
+class SelectionMethod(Enum):
+    TOURNAMENT = "tournament"
+    ROULETTE = "roulette"
 
 
 class GeneticNQueensApp(tk.Tk):
@@ -39,30 +50,91 @@ class GeneticNQueensApp(tk.Tk):
         )
         elitism_checkbox.grid(row=len(labels), column=1, columnspan=1, padx=5, pady=5)
 
-        selection_method_label = ttk.Label(self, text="Selection Method:")
-        selection_method_label.grid(
+        self.selection_method_label = ttk.Label(self, text="Selection Method:")
+        self.selection_method_label.grid(
             row=len(labels) + 1, column=0, sticky="w", padx=5, pady=5
         )
-        selection_methods = ["tournament", "roulette"]
-        self.selection_method_combo = ttk.Combobox(self, values=selection_methods)
+        self.selection_methods = [
+            SelectionMethod.TOURNAMENT.value,
+            SelectionMethod.ROULETTE.value,
+        ]
+        self.selection_method_combo = ttk.Combobox(self, values=self.selection_methods)
         self.selection_method_combo.grid(row=len(labels) + 1, column=1, padx=5, pady=5)
+        self.selection_method_combo.bind(
+            "<<ComboboxSelected>>",
+            self.toggle_tournament_size,  # type: ignore
+        )
+
+        self.tournament_size_label = ttk.Label(self, text="Tournament Size:")
+        self.tournament_size_entry = ttk.Entry(self)
+        self.tournament_size_label.grid(
+            row=len(labels) + 2, column=0, sticky="w", padx=5, pady=5
+        )
+        self.tournament_size_entry.grid(row=len(labels) + 2, column=1, padx=5, pady=5)
+        self.hide_tournament_size_entry()
+
+        implementations_label = ttk.Label(self, text="Implementation:")
+        implementations_label.grid(
+            row=len(labels) + 3, column=0, sticky="w", padx=5, pady=5
+        )
+        implementations = [Implementation.GO.value, Implementation.DEAP.value]
+        self.implementations_combo = ttk.Combobox(self, values=implementations)
+        self.implementations_combo.grid(row=len(labels) + 3, column=1, padx=5, pady=5)
 
         # Show submit button along with loading label
         self.submit_button = ttk.Button(self, text="Submit", command=self.submit)
-        self.submit_button.grid(row=len(labels) + 2, column=1, columnspan=1, pady=10)
+        self.submit_button.grid(row=len(labels) + 4, column=1, columnspan=1, pady=10)
 
         self.loading_label = ttk.Label(self, text="Loading...")
-        self.loading_label.grid(row=len(labels) + 2, column=0, columnspan=1, pady=10)
+        self.loading_label.grid(row=len(labels) + 4, column=0, columnspan=1, pady=10)
         self.loading_label.grid_remove()
 
     def load_default_values(self):
-        default_values = [5, 16, 500, 8, 0.2, 0.5]
+        num_runs = 12
+        population_size = 300
+        max_generations = 3000
+        num_queens = 29
+        mutation_rate = 0.2
+        crossover_rate = 0.5
+        default_values = [
+            num_runs,
+            population_size,
+            max_generations,
+            num_queens,
+            mutation_rate,
+            crossover_rate,
+        ]
         for entry, value in zip(self.entries, default_values):
             entry.delete(0, tk.END)
             entry.insert(0, str(value))
 
         self.elitism_var.set(False)
-        self.selection_method_combo.set("tournament")
+        self.selection_method_combo.set(SelectionMethod.TOURNAMENT.value)
+        self.tournament_size_entry.delete(0, tk.END)
+        self.tournament_size_entry.insert(0, "3")
+        self.toggle_tournament_size()  # type: ignore
+        self.implementations_combo.set(Implementation.GO.value)
+
+    def toggle_tournament_size(self, event=None):  # type: ignore
+        selection_method = self.selection_method_combo.get()
+        if selection_method == SelectionMethod.TOURNAMENT.value:
+            self.show_tournament_size_entry()
+        else:
+            self.hide_tournament_size_entry()
+
+    def show_tournament_size_entry(self):
+        self.tournament_size_label.grid()
+        self.tournament_size_entry.grid()
+
+    def hide_tournament_size_entry(self):
+        self.tournament_size_label.grid_remove()
+        self.tournament_size_entry.grid_remove()
+
+    def start_deap_implementation(self, args: Tuple[str, ...]) -> bool:
+        try:
+            subprocess.run(["python", "deap-implementation.py", *args], check=True)
+        except subprocess.CalledProcessError:
+            messagebox.showerror("Error", "Failed to start the DEAP app.")
 
     def start_golang_implementation(self, args: Tuple[str, ...]) -> bool:
         def get_executable_path() -> str:
@@ -121,7 +193,13 @@ class GeneticNQueensApp(tk.Tk):
             mutation_rate = float(self.entries[4].get())
             crossover_rate = float(self.entries[5].get())
             elitism = self.elitism_var.get()
-            selection_method_str = self.selection_method_combo.get()
+            selection_method = SelectionMethod(self.selection_method_combo.get())
+            tournament_size = (
+                int(self.tournament_size_entry.get())
+                if self.selection_method_combo.get() == SelectionMethod.TOURNAMENT.value
+                else None
+            )
+            implementation = Implementation(self.implementations_combo.get())
         except ValueError:
             messagebox.showerror("Error", "Invalid input")  # type: ignore
             return
@@ -138,13 +216,24 @@ class GeneticNQueensApp(tk.Tk):
             f"-mutationRate={mutation_rate}",
             f"-crossOverRate={crossover_rate}",
             f"-elitism={elitism}",
-            f"-selectionMethod={selection_method_str}",
+            f"-selectionMethod={selection_method.value}",
+            f"-tournamentSize={tournament_size}" if tournament_size is not None else "",
         )
 
-        threading.Thread(target=self.process_submission, args=(args,)).start()
+        threading.Thread(
+            target=self.process_submission, implementation=implementation, args=(args,)
+        ).start()
 
-    def process_submission(self, args: Tuple[str, ...]) -> None:
-        if self.start_golang_implementation(args):
+    def process_submission(
+        self, implementation: Implementation, args: Tuple[str, ...]
+    ) -> None:
+        match implementation:
+            case Implementation.DEAP:
+                ok = self.start_deap_implementation(args)
+            case Implementation.GO:
+                ok = self.start_golang_implementation(args)
+
+        if ok:
             # Hide loading label before showing results
             self.loading_label.grid_remove()
             self.show_results()
@@ -155,6 +244,5 @@ class GeneticNQueensApp(tk.Tk):
 
 if __name__ == "__main__":
     app = GeneticNQueensApp()
-    app.resizable(False, False)
-    app.geometry("300x310")
+    app.minsize(300, 370)
     app.mainloop()

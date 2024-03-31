@@ -12,6 +12,7 @@ type GenerationResult struct {
 	Generation         int     `json:"generation"`
 	BestFitness        int     `json:"best_fitness"`
 	MeanFitness        float64 `json:"mean_fitness"`
+	IsSolution         bool    `json:"is_solution"`
 }
 
 // Save a slice of generation results to a file in JSON format
@@ -76,4 +77,14 @@ func GetMeanGenerations(results []GenerationResult) float64 {
 		totalGenerations += float64(result.Generation)
 	}
 	return totalGenerations / float64(len(results))
+}
+
+func GetNumSolutions(results []GenerationResult) int {
+	numSolutions := 0
+	for _, result := range results {
+		if result.IsSolution {
+			numSolutions++
+		}
+	}
+	return numSolutions
 }

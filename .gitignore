@@ -3,3 +3,4 @@ bin
 test_report.html
 results.json
 __pycache__
+.venv

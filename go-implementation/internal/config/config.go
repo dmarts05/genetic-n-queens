@@ -9,14 +9,15 @@ import (
 )
 
 var DefaultConfig = Config{
-	NumRuns:         5,
+	NumRuns:         12,
 	SelectionMethod: Tournament,
-	PopulationSize:  16,
-	MaxGenerations:  500,
-	NumQueens:       8,
+	PopulationSize:  300,
+	MaxGenerations:  3000,
+	NumQueens:       29,
 	MutationRate:    0.2,
 	CrossOverRate:   0.5,
 	Elitism:         false,
+	TournamentSize:  3,
 }
 
 // Represents the available selection methods for the genetic algorithm
@@ -37,9 +38,14 @@ type Config struct {
 	MutationRate    float64             `json:"mutation_rate"`
 	CrossOverRate   float64             `json:"crossover_rate"`
 	Elitism         bool                `json:"elitism"`
+	TournamentSize  int                 `json:"tournament_size"`
 }
 
-func New(selectionMethod SelectionMethodType, numRuns, populationSize, maxGenerations, numQueens int, mutationRate, crossOverRate float64, elitism bool) (Config, error) {
+func New(selectionMethod SelectionMethodType, tournamentSize, numRuns, populationSize, maxGenerations, numQueens int, mutationRate, crossOverRate float64, elitism bool) (Config, error) {
+	if selectionMethod != Tournament {
+		tournamentSize = 0
+	}
+
 	cfg := Config{
 		SelectionMethod: selectionMethod,
 		NumRuns:         numRuns,
@@ -49,6 +55,7 @@ func New(selectionMethod SelectionMethodType, numRuns, populationSize, maxGenera
 		MutationRate:    mutationRate,
 		CrossOverRate:   crossOverRate,
 		Elitism:         elitism,
+		TournamentSize:  tournamentSize,
 	}
 	err := cfg.validate()
 	if err != nil {
@@ -73,6 +80,8 @@ func (c Config) validate() error {
 		return errors.New("mutation rate must be between 0 and 1")
 	case c.CrossOverRate < 0 || c.CrossOverRate > 1:
 		return errors.New("crossover rate must be between 0 and 1")
+	case c.SelectionMethod == Tournament && c.TournamentSize < 2:
+		return errors.New("tournament size must be at least 2 when using the tournament selection method")
 	default:
 		return nil
 	}
@@ -96,6 +105,7 @@ func LoadConfigFromJSON(path string) (Config, error) {
 		MutationRate    *float64             `json:"mutation_rate"`
 		CrossOverRate   *float64             `json:"crossover_rate"`
 		Elitism         *bool                `json:"elitism"`
+		TournamentSize  int                  `json:"tournament_size"`
 	}{}
 
 	// Load json into uncheckedConfig
@@ -107,6 +117,11 @@ func LoadConfigFromJSON(path string) (Config, error) {
 	// Loop through uncheckedConfig and check if any of the fields are nil
 	v := reflect.ValueOf(uncheckedConfig)
 	for i := 0; i < v.NumField(); i++ {
+		// TournamentSize is not a pointer, so we need to check it separately
+		if i == 8 {
+			continue
+		}
+
 		if v.Field(i).IsNil() {
 			return Config{}, errors.New("load config: invalid config file")
 		}

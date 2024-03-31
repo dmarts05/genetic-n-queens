@@ -23,6 +23,7 @@ func main() {
 	var crossOverRate float64
 	var elitism bool
 	var selectionMethodStr string
+	var tournamentSize int
 
 	flag.BoolVar(&help, "help", false, "Show help")
 	flag.StringVar(&configPath, "config", "", "Provide the path to a JSON configuration file for the genetic algorithm.")
@@ -34,6 +35,7 @@ func main() {
 	flag.Float64Var(&crossOverRate, "crossOverRate", config.DefaultConfig.CrossOverRate, "Crossover rate for the genetic algorithm.")
 	flag.BoolVar(&elitism, "elitism", config.DefaultConfig.Elitism, "Elitism for the genetic algorithm.")
 	flag.StringVar(&selectionMethodStr, "selectionMethod", string(config.DefaultConfig.SelectionMethod), "Selection method for the genetic algorithm.")
+	flag.IntVar(&tournamentSize, "tournamentSize", 3, "Tournament size for the tournament selection method.")
 	flag.Parse()
 
 	if help {
@@ -44,7 +46,7 @@ func main() {
 	var cfg config.Config
 	var err error
 	if configPath == "" {
-		cfg, err = config.New(config.SelectionMethodType(selectionMethodStr), numRuns, populationSize, maxGenerations, numQueens, mutationRate, crossOverRate, elitism)
+		cfg, err = config.New(config.SelectionMethodType(selectionMethodStr), tournamentSize, numRuns, populationSize, maxGenerations, numQueens, mutationRate, crossOverRate, elitism)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -96,6 +98,7 @@ func main() {
 	// Show final results
 	fmt.Println("************************************************************")
 	fmt.Println("Final results:")
+	fmt.Println("- Number of solutions found:", result.GetNumSolutions(results))
 	fmt.Println("- Mean number of generations:", result.GetMeanGenerations(results))
 	fmt.Println("- Best fitness:", result.GetBestFitness(results))
 	fmt.Println("- Worst fitness:", result.GetWorstFitness(results))

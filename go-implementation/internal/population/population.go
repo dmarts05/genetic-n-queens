@@ -12,6 +12,8 @@ import (
 	"github.com/dmarts05/genetic-n-queens/internal/selection"
 )
 
+const tournamentSize = 3
+
 // Generate a random individual
 func generateRandomIndividual(numQueens int) *individual.Individual {
 	return &individual.Individual{QueenPositions: rand.Perm(numQueens)}
@@ -34,7 +36,11 @@ func EvolveConcurrentWrapper(workerID int, ch chan<- result.GenerationResult, wg
 
 	defer func() {
 		fmt.Println("------------------------------------------------------------")
-		fmt.Println("Worker", workerID, "finished with best fitness:", r.BestFitness)
+		if r.BestFitness == bestPossibleFitness {
+			fmt.Println("Worker", workerID, "has found one of the optimal solutions:", r.BestQueenPositions)
+		} else {
+			fmt.Println("Worker", workerID, "has finished with a suboptimal solution:", r.BestQueenPositions, "with fitness", r.BestFitness)
+		}
 		fmt.Println("------------------------------------------------------------")
 		wg.Done()
 	}()
@@ -65,11 +71,13 @@ func Evolve(pop []*individual.Individual, selectionMethod config.SelectionMethod
 
 		bestQueenPositions := make([]int, len(bestIndividual.QueenPositions))
 		copy(bestQueenPositions, bestIndividual.QueenPositions)
+		bestFitness := bestIndividual.Fitness()
 		results = append(results, result.GenerationResult{
 			Generation:         generation,
 			BestQueenPositions: bestQueenPositions,
-			BestFitness:        bestIndividual.Fitness(),
+			BestFitness:        bestFitness,
 			MeanFitness:        meanFitness,
+			IsSolution:         bestFitness == bestPossibleFitness,
 		})
 
 		// Check if we have reached the best possible fitness
@@ -83,7 +91,7 @@ func Evolve(pop []*individual.Individual, selectionMethod config.SelectionMethod
 		case config.Roulette:
 			parents = selection.SelectByRoulette(pop)
 		case config.Tournament:
-			parents = selection.SelectByTournament(pop)
+			parents = selection.SelectByTournament(pop, tournamentSize)
 		}
 
 		// Crossover
@@ -109,7 +117,9 @@ func Evolve(pop []*individual.Individual, selectionMethod config.SelectionMethod
 		for _, ind := range newPop {
 			doMutate := rand.Float64() < mutationRate
 			if doMutate {
-				ind.Mutate()
+				// Since the mutation rate is per individual, we need to adjust it based on the number of queens
+				numQueens := len(ind.QueenPositions)
+				ind.Mutate(2.0 / float64(numQueens))
 			}
 		}
 
