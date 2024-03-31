@@ -104,9 +104,16 @@ func (ind *Individual) Crossover(other *Individual) (*Individual, *Individual, e
 	return child1, child2, nil
 }
 
-// Mutate the individual by shuffling the queen positions
-func (ind *Individual) Mutate() {
-	rand.Shuffle(len(ind.QueenPositions), func(i, j int) {
-		ind.QueenPositions[i], ind.QueenPositions[j] = ind.QueenPositions[j], ind.QueenPositions[i]
-	})
+// Mutate the individual by shuffling each queen position with a certain probability
+func (ind *Individual) Mutate(individualProbability float64) {
+	numQueens := len(ind.QueenPositions)
+	for i := 0; i < numQueens; i++ {
+		if rand.Float64() < individualProbability {
+			swapIndex := rand.IntN(numQueens - 1)
+			if swapIndex >= i {
+				swapIndex++
+			}
+			ind.QueenPositions[i], ind.QueenPositions[swapIndex] = ind.QueenPositions[swapIndex], ind.QueenPositions[i]
+		}
+	}
 }

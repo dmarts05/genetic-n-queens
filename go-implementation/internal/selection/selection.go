@@ -9,19 +9,20 @@ import (
 )
 
 // Select individuals from the population using the tournament method
-func SelectByTournament(population []*individual.Individual) []*individual.Individual {
+func SelectByTournament(population []*individual.Individual, size int) []*individual.Individual {
 	selected := []*individual.Individual{}
 	for len(selected) < len(population) {
-		// Get 2 random individuals
-		samples := util.Sample(population, 2)
-		ind1, ind2 := samples[0], samples[1]
+		// Get size random individuals
+		samples := util.Sample(population, size)
 
-		// Select the best one
-		if ind1.Fitness() > ind2.Fitness() {
-			selected = append(selected, ind1)
-		} else {
-			selected = append(selected, ind2)
+		// Select best individual
+		bestIndividual := samples[0]
+		for _, ind := range samples {
+			if ind.Fitness() > bestIndividual.Fitness() {
+				bestIndividual = ind
+			}
 		}
+		selected = append(selected, bestIndividual)
 	}
 
 	return selected

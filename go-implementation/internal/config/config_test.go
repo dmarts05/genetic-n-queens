@@ -8,14 +8,15 @@ import (
 
 func TestLoadConfig(t *testing.T) {
 	defaultConfig := Config{
-		NumRuns:         5,
+		NumRuns:         12,
 		SelectionMethod: Tournament,
-		PopulationSize:  16,
-		MaxGenerations:  500,
-		NumQueens:       8,
+		PopulationSize:  300,
+		MaxGenerations:  3000,
+		NumQueens:       29,
 		MutationRate:    0.2,
 		CrossOverRate:   0.5,
 		Elitism:         false,
+		TournamentSize:  3,
 	}
 
 	validConfig := Config{
@@ -27,6 +28,7 @@ func TestLoadConfig(t *testing.T) {
 		MutationRate:    0.01,
 		CrossOverRate:   0.1,
 		Elitism:         true,
+		TournamentSize:  0,
 	}
 
 	type args struct {

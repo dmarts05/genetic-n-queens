@@ -1,20 +1,16 @@
 import argparse
 import json
 import tkinter as tk
+from dataclasses import dataclass
 
 
+@dataclass
 class Solution:
-    def __init__(
-        self,
-        best_queen_positions: list[int],
-        generation: int,
-        best_fitness: int,
-        mean_fitness: float,
-    ):
-        self.best_queen_positions = best_queen_positions
-        self.generation = generation
-        self.best_fitness = best_fitness
-        self.mean_fitness = mean_fitness
+    best_queen_positions: list[int]
+    generation: int
+    best_fitness: int
+    mean_fitness: float
+    is_solution: bool
 
 
 class SolutionCarousel(tk.Tk):
@@ -51,8 +47,8 @@ class SolutionCarousel(tk.Tk):
             fill=tk.BOTH, expand=True, padx=self.padding, pady=(self.padding, 0)
         )
 
-        self.solution_frame = tk.Frame(self)
-        self.solution_frame.pack(fill=tk.X, padx=self.padding, pady=(self.padding, 0))
+        self.run_frame = tk.Frame(self)
+        self.run_frame.pack(fill=tk.X, padx=self.padding, pady=(self.padding, 0))
 
         self.button_frame = tk.Frame(self)
         self.button_frame.pack(fill=tk.X, padx=self.padding, pady=(0, self.padding))
@@ -61,9 +57,9 @@ class SolutionCarousel(tk.Tk):
         self.canvas = tk.Canvas(self.canvas_frame, width=self.width, height=self.height)
         self.canvas.pack(padx=(0, 0), pady=(0, 0))
 
-        # Solution info label
-        self.solution_label = tk.Label(self.solution_frame, font=("Arial", 12))
-        self.solution_label.pack(fill=tk.X)
+        # Run info label
+        self.run_label = tk.Label(self.run_frame, font=("Arial", 12))
+        self.run_label.pack(fill=tk.X)
 
         self.current_index = 0
 
@@ -124,14 +120,14 @@ class SolutionCarousel(tk.Tk):
 
     def update_solution_info(self) -> None:
         current_solution = self.results[self.current_index]
-        solution_info = f"Solution {self.current_index + 1}/{len(self.results)}\n"
+        solution_info = f"Run {self.current_index + 1}/{len(self.results)}\n"
         solution_info += "-" * 40 + "\n"
         solution_info += f"Queens: {self.num_queens}\n"
         solution_info += f"Generation: {current_solution.generation}\n"
         solution_info += f"Best Fitness: {current_solution.best_fitness}\n"
         solution_info += f"Mean Fitness: {current_solution.mean_fitness}\n"
         solution_info += f"Conflicts: {self.calculate_num_conflicts(current_solution.best_queen_positions)}\n"
-        self.solution_label.config(text=solution_info)
+        self.run_label.config(text=solution_info)
 
     def update_button_states(self) -> None:
         if self.current_index == 0:
@@ -196,13 +192,11 @@ def main() -> None:
 
     # Set canvas width and height based on number of queens
     num_queens = len(results[0].best_queen_positions)
-    canvas_width = min(400, num_queens * 50)
-    canvas_height = min(400, num_queens * 50)
+    canvas_width = min(800, num_queens * 40)
+    canvas_height = min(800, num_queens * 40)
 
     app = SolutionCarousel(canvas_width, canvas_height, results)
-    # Set fixed window size
-    app.resizable(False, False)
-    app.geometry(f"{canvas_width + 2 * app.padding}x{canvas_height + 22 * app.padding}")
+    app.minsize(canvas_width + 2 * app.padding, canvas_height + 22 * app.padding)
 
     app.mainloop()
 
