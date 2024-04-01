@@ -5,7 +5,6 @@ import subprocess
 import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
-from typing import Tuple
 
 
 class Implementation(Enum):
@@ -130,15 +129,15 @@ class GeneticNQueensApp(tk.Tk):
         self.tournament_size_label.grid_remove()
         self.tournament_size_entry.grid_remove()
 
-    def start_deap_implementation(self, args: Tuple[str, ...]) -> bool:
+    def start_deap_implementation(self, args: list[str]) -> bool:
         try:
-            subprocess.run(["python", "deap-implementation.py", *args], check=True)
+            subprocess.run(["python", "-m", "deap_implementation", *args], check=True)
             return True
         except subprocess.CalledProcessError:
             messagebox.showerror("Error", "Failed to start the DEAP app.")  # type: ignore
             return False
 
-    def start_golang_implementation(self, args: Tuple[str, ...]) -> bool:
+    def start_golang_implementation(self, args: list[str]) -> bool:
         def get_executable_path() -> str:
             system = platform.system().lower()
             executables = {
@@ -210,34 +209,40 @@ class GeneticNQueensApp(tk.Tk):
         self.submit_button.config(state="disabled")
         self.loading_label.grid()
 
-        args = (
-            f"-numRuns={num_runs}",
-            f"-populationSize={population_size}",
-            f"-maxGenerations={max_generations}",
-            f"-numQueens={num_queens}",
-            f"-mutationRate={mutation_rate}",
-            f"-crossOverRate={crossover_rate}",
-            f"-elitism={elitism}",
-            f"-selectionMethod={selection_method.value}",
-            f"-tournamentSize={tournament_size}" if tournament_size is not None else "",
-        )
+        args = {
+            "numRuns": f"{num_runs}",
+            "populationSize": f"{population_size}",
+            "maxGenerations": f"{max_generations}",
+            "numQueens": f"{num_queens}",
+            "mutationRate": f"{mutation_rate}",
+            "crossOverRate": f"{crossover_rate}",
+            "elitism": f"{elitism}",
+            "selectionMethod": f"{selection_method.value}",
+            "tournamentSize": f"{tournament_size}"
+            if tournament_size is not None
+            else "",
+        }
 
         threading.Thread(
             target=self.process_submission, args=(args, implementation)
         ).start()
 
     def process_submission(
-        self, implementation: Implementation, args: Tuple[str, ...]
+        self, args: dict[str, str], implementation: Implementation
     ) -> None:
+        ok = False
+        parsed_args: list[str] = []
+        for key, value in args.items():
+            if value:
+                parsed_args.extend([f"-{key}", value])
         match implementation:
-            case Implementation.DEAP:
-                ok = self.start_deap_implementation(args)
             case Implementation.GO:
-                ok = self.start_golang_implementation(args)
-
+                ok = self.start_golang_implementation(parsed_args)
+            case Implementation.DEAP:
+                ok = self.start_deap_implementation(parsed_args)
+        # Hide loading label before showing results
+        self.loading_label.grid_remove()
         if ok:
-            # Hide loading label before showing results
-            self.loading_label.grid_remove()
             self.show_results()
 
         # Enable submit button
