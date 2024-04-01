@@ -1,4 +1,5 @@
 import argparse
+import json
 from deap_implementation.schemas import SelectionMethod
 from deap_implementation.evolution import (
     evolve_concurrent_wrapper,
@@ -61,6 +62,7 @@ def parse_args() -> argparse.Namespace:
         "-elitism",
         type=bool,
         default=False,
+        action=argparse.BooleanOptionalAction,
         help="Elitism",
         dest="elitism",
     )
@@ -73,10 +75,25 @@ def main() -> None:
     """Run the DEAP implementation of the N-Queens problem."""
     args = parse_args()
 
+    best_possible_fitness = int(args.num_queens * (args.num_queens - 1) / 2)
+    print("*" * 60)
+    print("Starting genetic algorithm with the following configuration:")
+    print(f"- Number of runs: {args.num_runs}")
+    print(f"- Selection method: {args.selection_method}")
+    print(f"- Population size: {args.population_size}")
+    print(f"- Maximum number of generations: {args.max_generations}")
+    print(f"- Number of queens: {args.num_queens}")
+    print(f"- Mutation rate: {args.mutation_rate}")
+    print(f"- Crossover rate: {args.crossover_rate}")
+    print(f"- Elitism: {args.elitism}")
+    print(f"- Best possible fitness: {best_possible_fitness}")
+    print("*" * 60)
+
+    print()
+
     set_up_types()
     toolbox = set_up_toolbox(args)
 
-    best_possible_fitness = int(args.num_queens * (args.num_queens - 1) / 2)
     results = evolve_concurrent_wrapper(
         toolbox=toolbox,
         num_runs=args.num_runs,
@@ -87,7 +104,41 @@ def main() -> None:
         best_possible_fitness=best_possible_fitness,
         elitism=args.elitism,
     )
-    print(results)
+
+    print("*" * 60)
+    print("Final results:")
+    print(
+        f"- Number of solutions found: {len([result for result in results if result.is_solution])}"
+    )
+    print(
+        f"- Mean number of generations: {sum([result.generation for result in results]) / len(results)}"
+    )
+    print(f"- Best fitness: {max([result.best_fitness for result in results])}")
+    print(f"- Worst fitness: {min([result.best_fitness for result in results])}")
+    print(
+        f"- Mean of the best fitness: {sum([result.best_fitness for result in results]) / len(results)}"
+    )
+    print(
+        f"- Mean of the mean fitness: {sum([result.mean_fitness for result in results]) / len(results)}"
+    )
+    print("*" * 60)
+
+    # Save results to a file
+    with open("results.json", "w") as f:
+        json.dump(
+            [
+                {
+                    "best_queen_positions": result.best_queen_positions,
+                    "generation": result.generation,
+                    "best_fitness": result.best_fitness,
+                    "mean_fitness": result.mean_fitness,
+                    "is_solution": result.is_solution,
+                }
+                for result in results
+            ],
+            f,
+            indent=4,
+        )
 
 
 if __name__ == "__main__":

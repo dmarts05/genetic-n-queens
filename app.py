@@ -216,7 +216,7 @@ class GeneticNQueensApp(tk.Tk):
             "numQueens": f"{num_queens}",
             "mutationRate": f"{mutation_rate}",
             "crossOverRate": f"{crossover_rate}",
-            "elitism": f"{elitism}",
+            "elitism": f"{str(elitism).lower()}",
             "selectionMethod": f"{selection_method.value}",
             "tournamentSize": f"{tournament_size}"
             if tournament_size is not None
@@ -233,7 +233,9 @@ class GeneticNQueensApp(tk.Tk):
         ok = False
         parsed_args: list[str] = []
         for key, value in args.items():
-            if value:
+            if value == "true":
+                parsed_args.extend([f"-{key}"])
+            elif value and value != "false":
                 parsed_args.extend([f"-{key}", value])
         match implementation:
             case Implementation.GO:

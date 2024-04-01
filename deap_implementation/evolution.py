@@ -87,8 +87,20 @@ def evolve_concurrent_wrapper(
             for _ in range(num_runs)
         ]
 
-        for future in futures:
-            results.append(future.result())
+        for i, future in enumerate(futures):
+            result = future.result()
+            results.append(result)
+            print("-" * 60)
+            if result.best_fitness == best_possible_fitness:
+                print(
+                    f"Worker {i + 1} has found one of the optimal solutions: {result.best_queen_positions}"
+                )
+            else:
+                print(
+                    f"Worker {i + 1} has finished with a suboptimal solution: {result.best_queen_positions} with fitness {result.best_fitness}"
+                )
+            print("-" * 60)
+            print()
 
     return results
 
