@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/dmarts05/genetic-n-queens/internal/config"
 	"github.com/dmarts05/genetic-n-queens/internal/population"
@@ -74,6 +75,9 @@ func main() {
 
 	fmt.Println()
 
+	// Start timer
+	start := time.Now()
+
 	// Run the genetic algorithm for the number of runs specified in the configuration with goroutines
 	var wg sync.WaitGroup
 	ch := make(chan result.GenerationResult, cfg.NumRuns)
@@ -93,11 +97,14 @@ func main() {
 		results = append(results, r)
 	}
 
+	elapsed := time.Since(start)
+
 	fmt.Println()
 
 	// Show final results
 	fmt.Println("************************************************************")
 	fmt.Println("Final results:")
+	fmt.Println("- Elapsed time:", elapsed.Seconds(), "seconds")
 	fmt.Println("- Number of solutions found:", result.GetNumSolutions(results))
 	fmt.Println("- Mean number of generations:", result.GetMeanGenerations(results))
 	fmt.Println("- Best fitness:", result.GetBestFitness(results))
