@@ -1,5 +1,6 @@
 import argparse
 import json
+import time
 from deap_implementation.schemas import SelectionMethod
 from deap_implementation.evolution import (
     evolve_concurrent_wrapper,
@@ -94,6 +95,8 @@ def main() -> None:
     set_up_types()
     toolbox = set_up_toolbox(args)
 
+    start = time.time()
+
     results = evolve_concurrent_wrapper(
         toolbox=toolbox,
         num_runs=args.num_runs,
@@ -105,8 +108,11 @@ def main() -> None:
         elitism=args.elitism,
     )
 
+    elapsed = time.time() - start
+
     print("*" * 60)
     print("Final results:")
+    print(f"- Elapsed time: {elapsed} seconds")
     print(
         f"- Number of solutions found: {len([result for result in results if result.is_solution])}"
     )
