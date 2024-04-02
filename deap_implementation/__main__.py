@@ -72,9 +72,36 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
+def validate_args(args: argparse.Namespace) -> None:
+    if (
+        args.selection_method == SelectionMethod.TOURNAMENT.value
+        and args.tournament_size < 2
+    ):
+        raise ValueError("Tournament size must be at least 2")
+
+    if (
+        args.selection_method == SelectionMethod.ROULETTE.value
+        and args.population_size % 2 != 0
+    ):
+        raise ValueError("Population size must be even when using roulette selection")
+
+    if args.mutation_rate < 0 or args.mutation_rate > 1:
+        raise ValueError("Mutation rate must be between 0 and 1")
+
+    if args.crossover_rate < 0 or args.crossover_rate > 1:
+        raise ValueError("Crossover rate must be between 0 and 1")
+
+    if args.num_queens < 4:
+        raise ValueError("Number of queens must be at least 4")
+
+    if args.max_generations < 1:
+        raise ValueError("Maximum number of generations must be at least 1")
+
+
 def main() -> None:
     """Run the DEAP implementation of the N-Queens problem."""
     args = parse_args()
+    validate_args(args)
 
     best_possible_fitness = int(args.num_queens * (args.num_queens - 1) / 2)
     print("*" * 60)

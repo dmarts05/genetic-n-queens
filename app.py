@@ -134,7 +134,10 @@ class GeneticNQueensApp(tk.Tk):
             subprocess.run(["python", "-m", "deap_implementation", *args], check=True)
             return True
         except subprocess.CalledProcessError:
-            messagebox.showerror("Error", "Failed to start the DEAP app.")  # type: ignore
+            messagebox.showerror(
+                "Error",
+                "Failed to start the DEAP app. Check if you have DEAP installed and whether the provided values are valid.",
+            )
             return False
 
     def start_golang_implementation(self, args: list[str]) -> bool:
@@ -174,7 +177,10 @@ class GeneticNQueensApp(tk.Tk):
         try:
             subprocess.run([executable, *args], check=True)
         except subprocess.CalledProcessError:
-            messagebox.showerror("Error", "Failed to start the Golang app.")  # type: ignore
+            messagebox.showerror(
+                "Error",
+                "Failed to start the Golang app. Check if you have the binary and whether the provided values are valid.",
+            )
             return False
 
         return True

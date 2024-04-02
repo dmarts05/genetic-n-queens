@@ -70,8 +70,10 @@ func (c Config) validate() error {
 	switch {
 	case c.NumRuns < 1:
 		return errors.New("number of runs must be at least 1")
-	case c.PopulationSize < 1 || c.PopulationSize%2 != 0:
-		return errors.New("population size must be at least 2 and even")
+	case c.PopulationSize < 1:
+		return errors.New("population size must be at least 2")
+	case c.SelectionMethod == Roulette && c.PopulationSize%2 != 0:
+		return errors.New("population size must be even when using the roulette selection method")
 	case c.MaxGenerations < 1:
 		return errors.New("maximum number of generations must be at least 1")
 	case c.NumQueens < 4:
