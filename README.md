@@ -208,3 +208,11 @@ A continuación se presentan algunas de las soluciones obtenidas con la configur
 No mostramos el tablero porque es imposible visualizarlo, pero se obtuvo la solución óptima.
 
 <img src="assets/300x300-solution.png" alt="Solución 300x300">
+
+## Webgrafía
+
+- [N-Queens Problem explanation.](https://en.wikipedia.org/wiki/Eight_queens_puzzle)
+- [DEAP Documentation.](https://deap.readthedocs.io/en/master/)
+- [All crossover operators and when they are useful.](<https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)>)
+- [Ordered Crossover (OX) explanation.](https://mat.uab.cat/~alseda/MasterOpt/GeneticOperations.pdf)
+- [All mutation operators and when they are useful.](<https://en.wikipedia.org/wiki/Mutation_(genetic_algorithm)>)
