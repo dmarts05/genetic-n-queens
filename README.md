@@ -52,7 +52,7 @@ def fitness(individual: list[int]) -> int:
 
 Durante el desarrollo de la solución probé diferentes operadores de selección, cruce y mutación.
 
-Al principio, utilicé cruce en un punto y mutación por cambio de bit. Sin embargo, los resultados dejaban mucho que desear. Tras investigar un poco, descubrí que debía utilizar operadores de mutación y cruce específicos para problemas de permutaciones.
+Al principio, utilicé cruce en un punto y mutación por cambio de bit. Sin embargo, los resultados dejaron mucho que desear. Tras investigar un poco, descubrí que debía utilizar operadores de mutación y cruce específicos para problemas de permutaciones.
 
 A continuación, se detallan los operadores que mejor resultado dieron.
 
@@ -61,17 +61,17 @@ A continuación, se detallan los operadores que mejor resultado dieron.
 El mejor resultado se obtuvo con un torneo de 3 individuos.
 
 ```python
- def tournament_selection(population: list[list[int]], fitnesses: list[int], tournament_size: int) -> list[int]:
-     selected = []
-     while len(selected) < len(population):
-         tournament = random.sample(range(len(population)), tournament_size)
-         winner = tournament[0]
-         for i in tournament[1:]:
-             if fitnesses[i] > fitnesses[winner]:
-                 winner = i
-         selected.append(population[winner])
+def tournament_selection(population: list[list[int]], fitnesses: list[int], tournament_size: int) -> list[int]:
+    selected = []
+    while len(selected) < len(population):
+        tournament = random.sample(range(len(population)), tournament_size)
+        winner = tournament[0]
+        for i in tournament[1:]:
+            if fitnesses[i] > fitnesses[winner]:
+                winner = i
+        selected.append(population[winner])
 
-     return selected
+    return selected
 ```
 
 ### Cruce: Order Crossover (OX)
@@ -114,7 +114,6 @@ def order_crossover(parent1: list[int], parent2: list[int]) -> tuple[list[int], 
                     break
 
     return child1, child2
-
 ```
 
 ### Mutación: Shuffle Indexes Mutation
@@ -147,13 +146,13 @@ def shuffle_indexes_mutation(individual: list[int], individual_mutation_rate: fl
 
 ## GUI
 
-Se puede ejecutar el programa con una interfaz gráfica en Python con el comando `python app.py` y elegir tanto los parámetros del algoritmo genético como la implementación a utilizar. Es recomendable haber compilado los binarios de Go tenerlos almacenados en la carpeta `go-implementation/bin`.
+Se puede ejecutar el programa con una interfaz gráfica en Python con el comando `python app.py` y elegir tanto los parámetros del algoritmo genético como la implementación a utilizar. Es recomendable haber compilado los binarios de Go y tenerlos almacenados en la carpeta `go-implementation/bin`.
 
 ## Configuración recomendada
 
 ### Número de ejecuciones
 
-**12**. Ambas implementaciones se ejecutan concurrentemente utilizando hilos. En mi caso, tengo 12 hilos en mi CPU, por lo que ejecuto 12 instancias a la vez.
+**12**. Ambas implementaciones se ejecutan concurrentemente utilizando hilos. En mi caso, como mi CPU tiene 12 hilos utilizo 12 ejecuciones para aprovechar al máximo la CPU.
 
 ### Tamaño de la población
 
@@ -179,7 +178,7 @@ Se puede ejecutar el programa con una interfaz gráfica en Python con el comando
 
 **2/N**. Calculada automáticamente en ambas implementaciones. Es la que mejor resultado dio al escalar el número de reinas.
 
-### Elitisimo
+### Elitismo
 
 **No**. Los resultados con y sin elitismo no tenían diferencias significativas por la naturaleza permutacional del problema. Se decidió no utilizarlo para ahorrar tiempo de ejecución.
 
@@ -211,8 +210,8 @@ No mostramos el tablero porque es imposible visualizarlo, pero se obtuvo la solu
 
 ## Webgrafía
 
-- [N-Queens Problem explanation.](https://en.wikipedia.org/wiki/Eight_queens_puzzle)
-- [DEAP Documentation.](https://deap.readthedocs.io/en/master/)
-- [All crossover operators and when they are useful.](<https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)>)
-- [Ordered Crossover (OX) explanation.](https://mat.uab.cat/~alseda/MasterOpt/GeneticOperations.pdf)
-- [All mutation operators and when they are useful.](<https://en.wikipedia.org/wiki/Mutation_(genetic_algorithm)>)
+- [Explicación del problema de las N reinas.](https://en.wikipedia.org/wiki/Eight_queens_puzzle)
+- [Documentación de DEAP.](https://deap.readthedocs.io/en/master/)
+- [Casos de uso de los diferentes operadores de cruzamiento.](<https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)>)
+- [Explicación de Ordered Crossover (OX).](https://mat.uab.cat/~alseda/MasterOpt/GeneticOperations.pdf)
+- [Casos de uso de los diferentes operadores de mutación.](<https://en.wikipedia.org/wiki/Mutation_(genetic_algorithm)>)
